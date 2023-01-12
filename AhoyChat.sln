@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32929.385
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AhoyMessageReceiverConsumer", "AhoyMessageReceiverConsumer\AhoyMessageReceiverConsumer.csproj", "{1C7360D0-2B90-45EB-9B10-32180FF5A99E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AhoyMessageSenderConsumer", "AhoyMessageSenderConsumer\AhoyMessageSenderConsumer.csproj", "{02806AE7-46E3-49F1-AA47-B9622A9CB67F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AhoySendMessageWebSocket", "AhoySendMessageWebSocket\AhoySendMessageWebSocket.csproj", "{28D777FC-E6A5-4E91-ADB7-1E9A57307D6B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AhoyWhatsappConnector", "AhoyWhatsappConnector\AhoyWhatsappConnector.csproj", "{637B6938-26D1-4C77-95AE-048AA3DEA8A7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1C7360D0-2B90-45EB-9B10-32180FF5A99E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C7360D0-2B90-45EB-9B10-32180FF5A99E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C7360D0-2B90-45EB-9B10-32180FF5A99E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C7360D0-2B90-45EB-9B10-32180FF5A99E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02806AE7-46E3-49F1-AA47-B9622A9CB67F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02806AE7-46E3-49F1-AA47-B9622A9CB67F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02806AE7-46E3-49F1-AA47-B9622A9CB67F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02806AE7-46E3-49F1-AA47-B9622A9CB67F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28D777FC-E6A5-4E91-ADB7-1E9A57307D6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28D777FC-E6A5-4E91-ADB7-1E9A57307D6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28D777FC-E6A5-4E91-ADB7-1E9A57307D6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28D777FC-E6A5-4E91-ADB7-1E9A57307D6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{637B6938-26D1-4C77-95AE-048AA3DEA8A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{637B6938-26D1-4C77-95AE-048AA3DEA8A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{637B6938-26D1-4C77-95AE-048AA3DEA8A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{637B6938-26D1-4C77-95AE-048AA3DEA8A7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D45FCF9D-8204-4ED8-945A-F0727F7CB11B}
+	EndGlobalSection
+EndGlobal

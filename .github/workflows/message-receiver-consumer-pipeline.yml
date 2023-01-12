@@ -1,0 +1,31 @@
+name: Publish to AWS ECR
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Build and push to ECR
+      id: build-and-push
+      env:
+        AWS_REGISTRY: ${{ secrets.MESSAGE_RECEIVER_CONSUMER_AWS_REGISTRY }}
+        AWS_REPOSITORY: ${{ secrets.MESSAGE_RECEIVER_CONSUMER_AWS_REPOSITORY }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      run: |
+        # Login to ECR
+        $(aws ecr get-login --no-include-email --region us-east-1)
+
+        # Build the Docker image
+        docker build -t ${AWS_REGISTRY}/${AWS_REPOSITORY}:${{ github.sha }} .
+
+        # Push the image to ECR
+        docker push ${AWS_REGISTRY}/${AWS_REPOSITORY}:${{ github.sha }}
