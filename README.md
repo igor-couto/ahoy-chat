@@ -1,1 +1,1 @@
-# ahoy-chat
+# Ahoy! Chat
