@@ -1,0 +1,30 @@
+version: "3.9"
+services:
+  
+  mongo:
+    image: mongo:latest
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+    ports:
+      - "27017:27017"
+    volumes:
+      - "./.mongodb:/data/db"
+
+  localstack:
+    image: localstack/localstack:latest
+    environment:
+      SERVICES: sqs
+      DEBUG: 1
+      ALLOW_NONSTANDARD_REGIONS: 1
+      LOCALSTACK_HOSTNAME: localhost
+      DATA_DIR: /tmp/localstack/data
+    ports:
+      - "4566:4566"
+    volumes:
+      - "./.localstack:/tmp/localstack"
+    command: "/usr/bin/localstack start --host 0.0.0.0 --port 4566"
+
+volumes:
+  dbdata:
