@@ -46,17 +46,18 @@ public static class Webhook
 
         var text = webhookRequest.Entry.FirstOrDefault().Changes.FirstOrDefault().Value.Messages.FirstOrDefault().Text.Body;
         var from = webhookRequest.Entry.FirstOrDefault().Changes.FirstOrDefault().Value.Messages.FirstOrDefault().From;
-        
-        var chatMessage = new ChatMessage(
-            Guid.NewGuid().ToString(),
-            DateTime.UtcNow,
-            new From(from, from, "client"),
-            new To("", "", "seller"),
-            new Content("text", text)
-        );
+        var name = webhookRequest.Entry.FirstOrDefault().Changes.FirstOrDefault().Value.Contacts.FirstOrDefault().Profile.Name;
+
+        var incomingChatMessage = new IncomingMessage()
+        {
+            Id = Guid.NewGuid().ToString(),
+            Date =  DateTime.UtcNow,
+            Content = new Content("text", text),
+            Customer = new Customer(name, from, string.Empty)
+        };
 
         var publisher = new Publisher(sqsClient, "messages-received-from-clients");
-        await publisher.Publish(chatMessage);
+        await publisher.Publish(incomingChatMessage);
 
         return Results.Ok();
     }

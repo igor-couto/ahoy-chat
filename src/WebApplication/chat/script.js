@@ -1,8 +1,6 @@
 let currentChatPhone = null;
 
-let people = {
-
-};
+let people = { };
 
 function toggleEmptyChat(showEmptyChat) {
     const form = document.getElementsByClassName("send-section")[0];
@@ -46,11 +44,27 @@ function addPersonToChatList(phone) {
     attachClickListenerToChatPerson(chatPerson);
 }
 
+function addNewMessageNotification(phone) {
+    const chatPerson = document.querySelector(`[data-phone="${phone}"]`);
+
+    const newMessageImage = document.createElement("img");
+    newMessageImage.setAttribute("src", "./new-message.svg");
+    newMessageImage.setAttribute("alt", "New Message");
+    newMessageImage.classList.add("new-message-icon"); 
+    chatPerson.appendChild(newMessageImage);
+}
+
 function attachClickListenerToChatPerson(chatPerson) {
     chatPerson.addEventListener("click", function () {
         const phone = chatPerson.getAttribute("data-phone");
         loadChatContent(phone);
         toggleEmptyChat(false);
+
+        // Remove the new message icon if it exists
+        const newMessageIcon = chatPerson.querySelector('img.new-message-icon');
+        if (newMessageIcon) {
+            newMessageIcon.parentNode.removeChild(newMessageIcon);
+        }
     });
 }
 
@@ -70,7 +84,10 @@ function loadChatContent(phone) {
       addMessage(message.text, message.type, message.timestamp);
     });
 
-  // Highlight the selected person in the chat list
+    // Scroll down to the last message
+    messages.scrollTop = messages.scrollHeight;
+
+    // Highlight the selected person in the chat list
     const chatList = document.getElementById("chat-list");
     const chatPeople = chatList.getElementsByClassName("chat-person");
     for (let i = 0; i < chatPeople.length; i++) {
@@ -104,7 +121,9 @@ function addMessage(text, messageType, timestampValue) {
 }   
 
 window.addEventListener("load", function () {
-    const userId = "7140ca1a-af0f-4ce5-91d0-e3cf7e262da0";
+    fetchUserChats();
+
+    const userId = "7140ca1a-af0f-4ce5-91d0-e3cf7e262da0"; //TODO: Get user ID from session cookie or something
     const mySocket = new WebSocket("ws://localhost:50446/ws/" + userId);
     
     toggleEmptyChat(true);
@@ -125,13 +144,15 @@ window.addEventListener("load", function () {
         }
 
         const text = chatMessage.content.text;
-        const phone = chatMessage.from.contact;
+        const phone = chatMessage.customer.contact;
         let person = people[phone];
 
         if (!person) {
             person = {
-                name: chatMessage.from.name,
-                photo: 'https://www.nailseatowncouncil.gov.uk/wp-content/uploads/blank-profile-picture-973460_1280-400x400.jpg',
+                name: chatMessage.customer.name,
+                photo: chatMessage.customer.profilePicUrl
+                ? chatMessage.customer.profilePicUrl
+                : './blank-profile-picture-400x400.jpg',
                 messages: [],
             };
             people[phone] = person;
@@ -146,6 +167,8 @@ window.addEventListener("load", function () {
 
         if (phone === currentChatPhone) {
             addMessage(text, 'incoming');
+        } else {
+            addNewMessageNotification(phone);
         }
     };
 
@@ -164,20 +187,11 @@ window.addEventListener("load", function () {
         const chatMessage = JSON.stringify({
             id: crypto.randomUUID(),
             date: new Date(),
-            from: {
-                name: "",
-                contact: "",
-                role: "seller"
-            },
-            to: {
-                name: person.name,
-                contact: currentChatPhone,
-                role: "customer"
-            },
             content: {
                 type: "text",
                 "text": input_text
-            }
+            },
+            customerContact: currentChatPhone
         });
 
         mySocket.send(chatMessage);
@@ -196,3 +210,46 @@ window.addEventListener("load", function () {
       e.preventDefault();
     });
 });
+
+
+async function fetchUserChats() {
+    try {
+      const response = await fetch('http://localhost:50446/messages/7140ca1a-af0f-4ce5-91d0-e3cf7e262da0', {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json'
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Error fetching chat data! Status: ${response.status}`);
+      }
+  
+      const data = await response.json();
+      processData(data);
+    } catch (error) {
+      console.error('Error fetching chat data:', error);
+    }
+}
+
+function processData(data) {
+    data.forEach(chat => {
+        const phone = chat.customer.contact;
+        const profilePicUrl = isValidImageUrl(chat.customer.profilePicUrl) ? chat.customer.profilePicUrl : './blank-profile-picture-400x400.jpg';
+        const person = {
+        name: chat.customer.name,
+        photo: profilePicUrl,
+        messages: chat.messageHistory.map(message => ({
+            text: message.content.text,
+            type: message.type,
+            timestamp: new Date(message.date),
+        })),
+        };
+        people[phone] = person;
+        addPersonToChatList(phone);
+    });
+}
+
+function isValidImageUrl(url) {
+    return url && /\.(?:jpg|jpeg|gif|png|webp)$/i.test(url);
+}

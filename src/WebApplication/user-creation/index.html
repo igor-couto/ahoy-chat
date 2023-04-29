@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create User</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../header/styles.css" />
+    <script type="text/javascript" src="script.js" defer></script>
+    <script type="text/javascript" src="../header/script.js" defer></script>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+          <img src="../assets/company-logo.svg" alt="Company Logo" decoding="async" width="42" height="42">
+        </div>
+        <nav>
+          <a href="../home/index.html">Home</a>
+          <a href="index.html">Chat</a>
+          <div class="dropdown">
+            <a href="../under-construction/index.html">Dashboards</a>
+            <div class="dropdown-content">
+              <a href="../under-construction/index.html">Live Chats</a>
+              <a href="../under-construction/index.html">Bulk Messages</a>
+              <a href="../under-construction/index.html">Promotional Campaigns</a>
+            </div>
+          </div>
+          <div class="dropdown">
+            <a href="../under-construction/index.html">Messages</a>
+            <div class="dropdown-content">
+              <a href="../under-construction/index.html">Template Messages</a>
+              <a href="../under-construction/index.html">Bulk Message</a>
+            </div>
+          </div>
+        </nav>
+        <div class="user-profile">
+          <img id="user-photo" src="https://lh3.googleusercontent.com/a/AGNmyxZwisSTuINEbkwTyPFvl4jp4uM-77T6ssPNFjmQOmI=s80-il" alt="User Photo" onclick="toggleMenu()">
+          <div class="user-menu" id="user-menu">
+            <a href="../under-construction/index.html">My Account</a>
+            <a href="../login/index.html" class="exit">Exit</a>
+          </div>
+        </div>
+      </header>
+
+      <div class="content-wrapper">
+
+        <div class="container">
+            <h1>Create User</h1>
+            <form id="create-user-form">
+                <input type="text" id="UserName" name="UserName" placeholder="Username" required>
+                <input type="text" id="FirstName" name="FirstName" placeholder="First Name" required>
+                <input type="text" id="LastName" name="LastName" placeholder="Last Name" required>
+                <input type="email" id="Email" name="Email" placeholder="Email" required>
+                <input type="tel" id="PhoneNumber" name="PhoneNumber" placeholder="Phone Number" pattern="^\+\d{1,4} \d{9,15}$" required>
+                <input type="password" id="Password" name="Password" placeholder="Password" required>
+                <input type="file" id="Photo" name="Photo" accept="image/*" required>
+                <div id="user-groups-container">
+                    <label for="UserGroups">User Groups:</label>
+                    <div id="user-groups" class="checkboxes">
+                    </div>
+                </div>
+                <button type="submit">Create</button>
+                <button type="reset">Clean</button>
+            </form>
+        </div>
+
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

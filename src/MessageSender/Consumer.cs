@@ -48,9 +48,9 @@ public class Consumer : BackgroundService
                     
                     _currentReceiptHandle = message.ReceiptHandle;
 
-                    var chatMessage = JsonSerializer.Deserialize<ChatMessage>(message.Body);
+                    var outgoingChatMessage = JsonSerializer.Deserialize<OutgoingMessage>(message.Body);
 
-                    await _whatsAppConnectorClient.PostAsJsonAsync("message/text", new { phoneNumber = chatMessage.To.Contact, message = chatMessage.Content.Text });
+                    await _whatsAppConnectorClient.PostAsJsonAsync("message/text", new { phoneNumber = outgoingChatMessage.CustomerContact, message = outgoingChatMessage.Content.Text });
 
                     await _sqsClient.DeleteMessageAsync(queueUrlResponse.QueueUrl, message.ReceiptHandle, cancellationToken);
                 }
