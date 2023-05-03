@@ -2,8 +2,8 @@ version: "3.9"
 services:
 
   chat_database:
-    image: postgres
     container_name: chat_database 
+    image: postgres
     restart: always
     environment:
       POSTGRES_USER: admin
@@ -14,7 +14,8 @@ services:
     volumes:
       - dbdata:/var/lib/postgresql/data
 
-  mongo:
+  ongoing_chats_database:
+    container_name: ongoing_chats_database
     image: mongo:latest
     restart: always
     environment:
@@ -26,6 +27,7 @@ services:
       - "./.mongodb:/data/db"
 
   localstack:
+    container_name: localstack
     image: localstack/localstack:latest
     environment:
       SERVICES: sqs
@@ -38,6 +40,82 @@ services:
     volumes:
       - "./.localstack:/tmp/localstack"
     command: "/usr/bin/localstack start --host 0.0.0.0 --port 4566"
+
+  register:
+    container_name: register
+    build:
+      context: .
+      dockerfile: ./src/Register/Dockerfile
+    depends_on:
+      - chat_database
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      CONNECTIONSTRINGS__DEFAULTCONNECTION: "Server=chat_database;Database=chatDb;Port=5432;User Id=admin;Password=admin;"
+    ports:
+      - "8082:8082"
+      - "8083:8083"
+
+  whatsapp-connector:
+    build:
+      context: .
+      dockerfile: ./src/WhatsAppConnector/Dockerfile
+    depends_on:
+      - localstack
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      LOCALSTACK__SERVICEURL: "http://localstack:4566"
+    ports:
+      - "8084:8084"
+      - "8085:8085"
+
+  chat:
+    build:
+      context: .
+      dockerfile: ./src/Chat/Dockerfile
+    depends_on:
+      - localstack
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      LOCALSTACK__SERVICEURL: "http://localstack:4566"
+      MONGODB__CONNECTIONSTRING: "mongodb://admin:admin@ongoing_chats_database:27017"
+    ports:
+      - "8086:8086"
+      - "8087:8087"
+      - "80:80"
+      - "443:443"
+
+  message-receiver:
+    build:
+      context: .
+      dockerfile: ./src/MessageReceiver/Dockerfile
+    depends_on:
+      - localstack
+      - chat
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      LOCALSTACK__SERVICEURL: "http://localstack:4566"
+      AHOYCHAT__URL: "http://chat:8086"
+
+  message-sender:
+    build:
+      context: .
+      dockerfile: ./src/MessageSender/Dockerfile
+    depends_on:
+      - localstack
+      - whatsapp-connector
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      LOCALSTACK__SERVICEURL: "http://localstack:4566"
+      AHOYWHATSAPPCONNECTOR__URL: "http://whatsapp-connector:8084"
+
+  web-application:
+    container_name: web-application
+    build:
+      context: .
+      dockerfile: ./src/WebApplication/Dockerfile
+    image: web-application:latest
+    ports:
+      - "8080:80"
 
 volumes:
   dbdata:
