@@ -16,7 +16,7 @@ public class Publisher
         _queueName = queueName;
     }
 
-    public async Task Publish(ChatMessage chatMessage, CancellationToken cancellationToken = default)
+    public async Task Publish(IncomingMessage chatMessage, CancellationToken cancellationToken = default)
     {
         var queueUrlResponse = await _sqsClient.GetQueueUrlAsync(_queueName, cancellationToken);
 

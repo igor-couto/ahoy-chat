@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using AhoyWhatsappConnector.Requests.Incoming;
 using AhoyWhatsappConnector.Requests.Outgoing;
+using AhoyContracts.Messages.WhatsApp;
 
 namespace AhoyWhatsappConnector.Endpoints;
 
@@ -13,18 +14,17 @@ public static class SendMessage
     }
 
     private static async Task<IResult> SendTextMessage(
-        string phoneNumber,
-        string message,
+        [FromBody] TextMessage textMessage,
         [FromServices] IHttpClientFactory httpClientFactory,
         [FromServices] IConfiguration configuration)
     {
         var httpClient = httpClientFactory.CreateClient("WhatsappCloudApiWithUserToken");
 
-        var content = new SendTextMessageRequest(phoneNumber, message).ToContent();
+        var content = new SendTextMessageRequest(textMessage.PhoneNumber, textMessage.Message).ToContent();
 
         var phoneNumberId = configuration.GetSection("WhatsappCloudApi")["PhoneNumberId"];
 
-        await httpClient.PostAsync($"/{phoneNumberId}/messages", content);
+        await httpClient.PostAsync($"{phoneNumberId}/messages", content);
 
         return Results.Ok();
     }
