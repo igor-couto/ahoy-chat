@@ -1,14 +1,17 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build-env
+﻿FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS build
 WORKDIR /app
-COPY . ./
-RUN dotnet restore
-RUN dotnet publish -c Release -o out
+COPY ["./src/MessageReceiver/AhoyMessageReceiver.csproj", "MessageReceiver/"]
+COPY ["./src/Shared/AhoyShared.csproj", "Shared/"]
+RUN dotnet restore "MessageReceiver/AhoyMessageReceiver.csproj" --disable-parallel --runtime linux-musl-x64
+COPY . .
+RUN dotnet publish -c Release -o out --runtime linux-musl-x64 --self-contained true
 
-FROM mcr.microsoft.com/dotnet/runtime:7.0
+FROM mcr.microsoft.com/dotnet/runtime-deps:7.0-alpine
+RUN apk upgrade musl
+RUN adduser --disabled-password \
+  --home /app \
+  --gecos '' dotnetuser && chown -R dotnetuser /app
+USER dotnetuser
 WORKDIR /app
-COPY --from=build-env /app/out .
-
-ENV AWS_ACCESS_KEY_ID=YOUR_ACCESS_KEY
-ENV AWS_SECRET_ACCESS_KEY=YOUR_SECRET_KEY
-
-ENTRYPOINT ["dotnet", "YourAppName.dll"]
+COPY --from=build /app/out .
+ENTRYPOINT ["./AhoyMessageReceiver"]
