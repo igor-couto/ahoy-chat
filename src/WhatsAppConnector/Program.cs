@@ -32,7 +32,6 @@ var app = builder.Build();
 
 app.UseSwaggerConfiguration(applicationInfo);
 
-app.UseHttpsRedirection();
 
 app.MapHealthChecks("/health");
 
