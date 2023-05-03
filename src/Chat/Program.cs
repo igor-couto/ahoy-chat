@@ -57,7 +57,7 @@ app.MapGet("/ws/{userId:guid}", async (Guid userId, HttpContext context, [FromSe
         {
             var receivedText = Encoding.UTF8.GetString(buffer, 0, result.Count);
 
-            Console.WriteLine($"Message from user {userId}: {receivedText}");
+            Console.WriteLine($"Message from user {userId}: {JsonSerializer.Serialize(receivedText, new JsonSerializerOptions { WriteIndented = true })}");
 
             var outgoingChatMessage = JsonSerializer.Deserialize<OutgoingMessage>(receivedText);
 
