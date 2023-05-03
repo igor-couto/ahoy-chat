@@ -124,7 +124,7 @@ window.addEventListener("load", function () {
     fetchUserChats();
 
     const userId = "7140ca1a-af0f-4ce5-91d0-e3cf7e262da0"; //TODO: Get user ID from session cookie or something
-    const mySocket = new WebSocket("ws://localhost:50446/ws/" + userId);
+    const mySocket = new WebSocket("ws://localhost:8086/ws/" + userId);
     
     toggleEmptyChat(true);
 
@@ -214,7 +214,7 @@ window.addEventListener("load", function () {
 
 async function fetchUserChats() {
     try {
-      const response = await fetch('http://localhost:50446/messages/7140ca1a-af0f-4ce5-91d0-e3cf7e262da0', {
+      const response = await fetch('http://localhost:8086/messages/7140ca1a-af0f-4ce5-91d0-e3cf7e262da0', {
         method: 'GET',
         headers: {
           'accept': 'application/json'

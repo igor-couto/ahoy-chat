@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         try {
-            const response = await fetch('your-url-to-create-user', {
+            const response = await fetch('http://localhost:8082/users', {
                 method: 'POST',
                 body: formData 
             });
