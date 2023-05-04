@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 
-namespace AhoyRegister.Entities;
+namespace AhoyShared.Entities;
 
 public enum Role
 {

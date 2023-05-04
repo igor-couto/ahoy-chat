@@ -41,6 +41,19 @@ services:
       - "./.localstack:/tmp/localstack"
     command: "/usr/bin/localstack start --host 0.0.0.0 --port 4566"
 
+  auth:
+    build:
+      context: .
+      dockerfile: ./src/Auth/Dockerfile
+    depends_on:
+      - chat_database
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      CONNECTIONSTRINGS__DEFAULTCONNECTION: "Server=chat_database;Database=chatDb;Port=5432;User Id=admin;Password=admin;"
+    ports:
+      - "8088:8088"
+      - "8089:8089"
+
   register:
     container_name: register
     build:
