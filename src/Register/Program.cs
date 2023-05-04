@@ -2,9 +2,10 @@
 using AhoyRegister.Configuration;
 using AhoyRegister.Requests;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Net.Http.Headers;
+using Npgsql;
+using Dapper;
+using Scrypt;
+using AhoyRegister.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 var applicationInfo = builder.Configuration.GetSection("Application").Get<ApplicationInfo>();
@@ -14,15 +15,15 @@ RegisterServices(builder, applicationInfo);
 await using var app = builder.Build();
 ConfigureApplication(app, applicationInfo);
 
-app.Run();
-
 
 static void RegisterServices(WebApplicationBuilder builder, ApplicationInfo applicationInfo)
 {
+    builder.Services.AddCorsConfiguration();
+
     builder.Services.Configure<FormOptions>(options =>
     {
         options.MultipartBodyLengthLimit = 10 * 1024 * 1024; // 10MB
-        options.MemoryBufferThreshold = Int32.MaxValue;
+        options.MemoryBufferThreshold = int.MaxValue;
     });
 
     builder.Services.AddSwagger(applicationInfo);
@@ -36,11 +37,13 @@ static void RegisterServices(WebApplicationBuilder builder, ApplicationInfo appl
 
 static void ConfigureApplication(WebApplication app, ApplicationInfo applicationInfo)
 {
-     app.UseFluentMigratorConfiguration(); 
-     app.UseSwaggerConfiguration(applicationInfo);
+    app.UseRouting();
+    app.UseCorsConfiguration();   
+    app.UseFluentMigratorConfiguration(); 
+    app.UseSwaggerConfiguration(applicationInfo);
 }
 
-app.MapPost("/api/users", async (HttpContext context) =>
+app.MapPost("/users", async (HttpContext context, IConfiguration configuration) =>
 {
     if (!context.Request.HasFormContentType)
     {
@@ -58,7 +61,7 @@ app.MapPost("/api/users", async (HttpContext context) =>
         Email = form["Email"],
         PhoneNumber = form["PhoneNumber"],
         Password = form["Password"],
-        UserGroups = form["UserGroups"].ToString().Split(',').ToArray()
+        //UserGroups = form["UserGroups"].ToString().Split(',').ToArray()
     };
 
     // Validate the request (e.g., check for required fields, password constraints, etc.)
@@ -83,33 +86,47 @@ app.MapPost("/api/users", async (HttpContext context) =>
     // return Created(url, user);
 });
 
-app.Run();
-
-
-
 
 
 static async Task SaveUser(CreateUserRequest user, IFormFile image, IConfiguration configuration)
 {
     using var connection = new NpgsqlConnection(configuration.GetConnectionString("DefaultConnection"));
 
+    var userId = Guid.NewGuid();
+
+    var passwordSalt = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Substring(0, 6);
+    var passwordHash = new ScryptEncoder().Encode(passwordSalt + user.Password);
+
+    var role = Role.User;
+
     // Save the user data in the "users" table
     const string userInsertQuery = @"
-        INSERT INTO users (username, first_name, last_name, email, phone_number, password)
-        VALUES (@UserName, @FirstName, @LastName, @Email, @PhoneNumber, @Password)
+        INSERT INTO users (id, user_name, first_name, last_name, email, phone_number, password_hash, password_salt, role, created_at)
+        VALUES (@Id, @UserName, @FirstName, @LastName, @Email, @PhoneNumber, @PasswordHash, @PasswordSalt, @Role, @CreatedAt)
         RETURNING id;";
 
-    var userId = await connection.QuerySingleAsync<int>(userInsertQuery, user);
+    await connection.QuerySingleAsync(userInsertQuery, new { 
+        Id = userId,
+        UserName = user.UserName,
+        FirstName = user.FirstName,
+        LastName = user.LastName,
+        Email = user.Email,
+        PhoneNumber = user.PhoneNumber,
+        PasswordHash = passwordHash,
+        PasswordSalt = passwordSalt,
+        Role = role,
+        CreatedAt = DateTime.UtcNow
+    });
 
     // Save the user groups in the "user_groups" table
-    const string userGroupInsertQuery = @"
-        INSERT INTO user_groups (user_id, group_id)
-        VALUES (@UserId, @GroupId);";
+    //const string userGroupInsertQuery = @"
+    //    INSERT INTO user_groups (user_id, group_id)
+    //    VALUES (@UserId, @GroupId);";
 
-    foreach (var groupId in user.UserGroups)
-    {
-        await connection.ExecuteAsync(userGroupInsertQuery, new { UserId = userId, GroupId = groupId });
-    }
+    //foreach (var groupId in user.UserGroups)
+    //{
+    //    await connection.ExecuteAsync(userGroupInsertQuery, new { UserId = userId, GroupId = groupId });
+    //}
 
     // Save the user image (you can store the image bytes in the database or save the path to the image file)
     if (image != null && image.Length > 0)
@@ -120,9 +137,11 @@ static async Task SaveUser(CreateUserRequest user, IFormFile image, IConfigurati
         var imageBytes = memoryStream.ToArray();
 
         const string imageInsertQuery = @"
-            INSERT INTO user_images (user_id, image_data)
+            INSERT INTO user_profile_pictures (user_id, image_data)
             VALUES (@UserId, @ImageData);";
 
         await connection.ExecuteAsync(imageInsertQuery, new { UserId = userId, ImageData = imageBytes });
     }
 }
+
+app.Run();
