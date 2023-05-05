@@ -10,6 +10,8 @@ using AhoyAuth.Requests;
 using AhoyShared.Configuration;
 using AhoyShared.Entities;
 
+Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+
 var builder = WebApplication.CreateBuilder(args);
 var applicationInfo = builder.Configuration.GetSection("Application").Get<ApplicationInfo>();
 
@@ -31,13 +33,15 @@ static void ConfigureApplication(WebApplication app, ApplicationInfo application
     app.UseSwaggerConfiguration(applicationInfo);
 }
 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
 using var _dataContext = new NpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"));
 
 var _secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]));
 var _issuer = builder.Configuration["Jwt:Issuer"];
 var _audience = builder.Configuration["Jwt:Audience"];
 
-app.MapPost("/login", async ([FromBody] LoginRequest loginRequest, CancellationToken cancellationToken) =>
+app.MapPost("/login", async (HttpContext context, [FromBody] LoginRequest loginRequest, CancellationToken cancellationToken) =>
 {
     var user = await FindUserFromRequest(loginRequest, cancellationToken);
 
@@ -58,6 +62,16 @@ app.MapPost("/login", async ([FromBody] LoginRequest loginRequest, CancellationT
 
     SetRefreshTokenCookie(refreshToken);
 
+    var cookieOptions = new CookieOptions
+    {
+        HttpOnly = true,
+        Secure = true,
+        SameSite = SameSiteMode.Strict,
+        Expires = new DateTimeOffset(DateTime.Now.AddHours(2))
+    };
+
+    context.Response.Cookies.Append("refreshToken", token.AccessToken, cookieOptions);
+
     return Results.Ok(token);
 });
 
@@ -66,13 +80,13 @@ async Task<User> FindUserFromRequest(LoginRequest loginRequest, CancellationToke
     if(!string.IsNullOrEmpty(loginRequest.UserName))
     {       
         var userQuery = @"SELECT * FROM users WHERE user_name = @UserName";
-        return await _dataContext.QuerySingleAsync(userQuery, new {UserName = loginRequest.UserName});
+        return await _dataContext.QuerySingleOrDefaultAsync<User>(userQuery, new {UserName = loginRequest.UserName});
     }
 
     if(!string.IsNullOrEmpty(loginRequest.Email))
     {   
         var emailQuery = @"SELECT * FROM users WHERE email = @Email";
-        return await _dataContext.QuerySingleAsync(emailQuery, new {@Email = loginRequest.Email});
+        return await _dataContext.QuerySingleOrDefaultAsync<User>(emailQuery, new {@Email = loginRequest.Email});
     }
 
     return null;    
@@ -119,6 +133,8 @@ void SetRefreshTokenCookie(RefreshToken newRefreshToken)
     var cookieOptions = new CookieOptions
     {
         HttpOnly = true,
+        Secure = true,
+        SameSite = SameSiteMode.Strict,
         Expires = newRefreshToken.Expires
     };
 
