@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Npgsql;
 using Dapper;
 using Scrypt;
-using AhoyRegister.Entities;
+using AhoyShared.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 var applicationInfo = builder.Configuration.GetSection("Application").Get<ApplicationInfo>();

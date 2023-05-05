@@ -1,5 +1,4 @@
 using FluentMigrator;
-using AhoyRegister.Entities;
 
 namespace AhoyRegister.Migrations;
 
