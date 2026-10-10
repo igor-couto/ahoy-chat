@@ -2,6 +2,10 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/igor-couto/ahoy-chat/blob/main/LICENSE)
 [![Build Badge](https://github.com/igor-couto/ahoy-chat/actions/workflows/build.yml/badge.svg)](https://github.com/igor-couto/ahoy-chat/actions/workflows/build.yml)
+![.NET 10](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-232F3E?logo=amazonwebservices&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-47A248?logo=mongodb&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
 
 Chat system that integrates with Whatsapp.
 
